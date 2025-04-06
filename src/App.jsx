@@ -6,7 +6,29 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import "./index.css";
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 function CoinList() {
   const [coins, setCoins] = useState([]);
@@ -96,6 +118,7 @@ function CoinDetail() {
   const { coinId } = useParams();
   const navigate = useNavigate();
   const [coinData, setCoinData] = useState(null);
+  const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
     async function fetchCoinData() {
@@ -105,6 +128,25 @@ function CoinDetail() {
         );
         const data = await response.json();
         setCoinData(data);
+
+        // Prepare chart data
+        const labels = data.prices.map((price) =>
+          new Date(price[0]).toLocaleDateString()
+        );
+        const prices = data.prices.map((price) => price[1]);
+
+        setChartData({
+          labels,
+          datasets: [
+            {
+              label: `${coinId} Price (Last 7 Days)`,
+              data: prices,
+              borderColor: "rgba(75, 192, 192, 1)",
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              tension: 0.2,
+            },
+          ],
+        });
       } catch (error) {
         console.error("Error fetching coin data:", error);
       }
@@ -121,11 +163,9 @@ function CoinDetail() {
         Back to Coins List
       </button>
       <h1 className="text-4xl font-bold mb-6">Coin Price Chart</h1>
-      {coinData ? (
+      {chartData ? (
         <div className="w-full max-w-4xl bg-gray-800 p-6 rounded-lg">
-          {/* Placeholder for chart */}
-          <p className="text-center text-gray-400">Chart data for {coinId}</p>
-          {/* You can integrate a chart library like Chart.js or Recharts here */}
+          <Line data={chartData} options={{ responsive: true }} />
         </div>
       ) : (
         <p>Loading...</p>
