@@ -119,12 +119,13 @@ function CoinDetail() {
   const navigate = useNavigate();
   const [coinData, setCoinData] = useState(null);
   const [chartData, setChartData] = useState(null);
+  const [timeRange, setTimeRange] = useState("7"); // Default to 7 days
 
   useEffect(() => {
     async function fetchCoinData() {
       try {
         const response = await fetch(
-          `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=7`
+          `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${timeRange}`
         );
         const data = await response.json();
         setCoinData(data);
@@ -139,7 +140,7 @@ function CoinDetail() {
           labels,
           datasets: [
             {
-              label: `${coinId} Price (Last 7 Days)`,
+              label: `${coinId} Price (Last ${timeRange} Days)`,
               data: prices,
               borderColor: "rgba(75, 192, 192, 1)",
               backgroundColor: "rgba(75, 192, 192, 0.2)",
@@ -152,7 +153,7 @@ function CoinDetail() {
       }
     }
     fetchCoinData();
-  }, [coinId]);
+  }, [coinId, timeRange]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
@@ -163,6 +164,23 @@ function CoinDetail() {
         Back to Coins List
       </button>
       <h1 className="text-4xl font-bold mb-6">Coin Price Chart</h1>
+      <div className="mb-4">
+        <label htmlFor="timeRange" className="mr-2">
+          Select Time Range:
+        </label>
+        <select
+          id="timeRange"
+          value={timeRange}
+          onChange={(e) => setTimeRange(e.target.value)}
+          className="px-4 py-2 bg-gray-800 text-white rounded-lg"
+        >
+          <option value="1">1 Day</option>
+          <option value="7">7 Days</option>
+          <option value="30">30 Days</option>
+          <option value="90">90 Days</option>
+          <option value="365">1 Year</option>
+        </select>
+      </div>
       {chartData ? (
         <div className="w-full max-w-4xl bg-gray-800 p-6 rounded-lg">
           <Line data={chartData} options={{ responsive: true }} />
